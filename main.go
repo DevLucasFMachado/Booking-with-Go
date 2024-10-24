@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 )
 
 type User struct {
@@ -13,6 +15,8 @@ type User struct {
 }
 
 var bookings = make([]User, 0)
+
+var wg = sync.WaitGroup{}
 
 func main() {
 
@@ -56,6 +60,8 @@ func main() {
 
 		bookings = append(bookings, userData)
 		printFirstNames()
+		wg.Add(1)
+		go sendTicket(userTickets, firstName, lastName, email)
 		printFinalData(firstName, lastName, remainingTickets, userTickets)
 		fmt.Printf("Info of the guests: %v\n", bookings)
 
@@ -65,7 +71,7 @@ func main() {
 		}
 
 	}
-
+	wg.Wait()
 }
 
 func greetUsers(conferenceName string, remainTickets uint) {
@@ -103,4 +109,13 @@ func checkRemainingTickets(remainingTickets uint) bool {
 func printFinalData(firstName string, lastName string, remainingTickets uint, userTickets uint) {
 	fmt.Printf("User %v %v booked %v tickets\n", firstName, lastName, userTickets)
 	fmt.Printf("%v tickets remaining\n", remainingTickets)
+}
+
+func sendTicket(userTickets uint, firstName string, lastName string, email string) {
+	time.Sleep(10 * time.Second)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
+	fmt.Println("#############")
+	fmt.Println("Sending ticket:", ticket, "\nto email address:", email)
+	fmt.Println("#############")
+	wg.Done()
 }
